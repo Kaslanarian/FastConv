@@ -31,6 +31,17 @@ for i in range(N):
 2. 利用NumPy的广播机制消除样本循环和一部分通道循环；
 3. 利用im2col策略消除所有循环。
 
+## Simple Test
+
+`test.py`中的测试，用最基础的循环卷积与我们提出的三种方法的单次运行时间对比，输入100张三通道的256*256图片，输出一个通道，计算时间：
+
+```python
+Baseline  : 57.8798823357 s
+Broadcast : 0.4763040543 s
+Scipy     : 0.3990969658 s
+im2col    : 0.4518356323 s
+```
+
 ## Reference(Updating)
 
 - <https://welts.xyz/2022/05/02/fast_conv/>;
