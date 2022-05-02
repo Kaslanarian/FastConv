@@ -37,7 +37,6 @@ class Conv1d:
             N, out_channels, n_output
         )
         '''
-        kernel = self.kernel
         N, in_channels, n_features = x.shape
         assert in_channels == self.in_channels
         n_output = self.calculate_shape(n_features)
@@ -54,14 +53,13 @@ class Conv1d:
                         for m in range(self.kernel_size):
                             output[i, j,
                                    k] += padding_x[i, l, k * self.stride +
-                                                   m] * kernel[j, l, m]
+                                                   m] * self.kernel[j, l, m]
         return output
 
     @timing
     def scipy_corr_opt(self, x: np.array) -> np.array:
         N, in_channels, n_features = x.shape
         assert in_channels == self.in_channels
-        assert self.stride == 1
         n_output = self.calculate_shape(n_features)
         padding_x = np.pad(
             x,
@@ -75,7 +73,7 @@ class Conv1d:
                     padding_x[:, i, :],
                     self.kernel[j, i],
                     origin=-1,
-                )[..., :n_output]
+                )[..., :self.stride * n_output:self.stride]
         return output
 
     @timing
@@ -94,12 +92,12 @@ class Conv1d:
                 output[:, i, j] = np.sum(
                     padding_x[:, :, j * self.stride:j * self.stride +
                               self.kernel_size] * self.kernel[i, :],
-                    axis=(-1, -2),
+                    axis=(1, 2),
                 )
         return output
 
     @timing
-    def matmul_opt(self, x: np.array) -> np.array:
+    def im2col_opt(self, x: np.array) -> np.array:
         N, in_channels, n_features = x.shape
         assert in_channels == self.in_channels
         n_output = self.calculate_shape(n_features)
@@ -108,7 +106,12 @@ class Conv1d:
             [(0, 0), (0, 0), (self.padding, self.padding)],
             'constant',
         )
-        col = np.zeros((N, in_channels, self.kernel_size, n_output))
+        col = np.zeros((
+            N,
+            in_channels,
+            self.kernel_size,
+            n_output,
+        ))
 
         for i in range(self.kernel_size):
             i_max = i + n_output * self.stride
