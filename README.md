@@ -23,24 +23,23 @@ for i in range(N):
 
 1. 利用`scipy.ndimage.correlate1d`消除样本循环和卷积循环；
 2. 利用NumPy的广播机制消除样本循环和一部分通道循环；
-3. 利用类似im2col策略消除所有循环。
+3. 利用类似im2col策略消除大部分循环；
+4. 使用im2col+strided策略消除所有循环.
+
+四种方法和baseline的比较（横轴为输入特征数，纵轴为时间的对数，具体实验设置参考[test.py](/src/test.py)，图中的`strided`就是`im2col+strided`方法）
+
+![1](img/test.png)
+
+最优两种方法和PyTorch的对比：
+
+![2](img/test_im2col.png)
 
 ## Conv2d
 
 1. 利用`scipy.ndimage.correlate`消除样本循环和卷积循环；
 2. 利用NumPy的广播机制消除样本循环和一部分通道循环；
 3. 利用im2col策略消除所有循环。
-
-## Simple Test
-
-`test.py`中的测试，用最基础的循环卷积与我们提出的三种方法的单次运行时间对比，输入100张三通道的256*256图片，输出一个通道，计算时间：
-
-```python
-Baseline  : 57.8798823357 s
-Broadcast : 0.4763040543 s
-Scipy     : 0.3990969658 s
-im2col    : 0.4518356323 s
-```
+4. ...
 
 ## Reference(Updating)
 
